@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { del } from "@vercel/blob";
 import { prisma } from "@/lib/db";
 import type { ActionState } from "@/types";
 
@@ -9,14 +10,14 @@ export async function createRestaurant(
   formData: FormData
 ): Promise<ActionState> {
   const name = formData.get("name")?.toString().trim() ?? "";
-  const menuUrl = formData.get("menuUrl")?.toString().trim() || null;
+  const menuUrls = formData.getAll("menuUrls") as string[];
   const note = formData.get("note")?.toString().trim() || null;
 
   if (!name) {
     return { success: false, errors: { name: "Restaurant name is required" } };
   }
 
-  await prisma.restaurant.create({ data: { name, menuUrl, note } });
+  await prisma.restaurant.create({ data: { name, menuUrls, note } });
 
   revalidatePath("/restaurants");
   revalidatePath("/order/new");
@@ -25,6 +26,15 @@ export async function createRestaurant(
 }
 
 export async function deleteRestaurant(id: string): Promise<void> {
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id },
+    select: { menuUrls: true },
+  });
+
+  if (restaurant?.menuUrls.length) {
+    await del(restaurant.menuUrls);
+  }
+
   await prisma.restaurant.delete({ where: { id } });
   revalidatePath("/restaurants");
   revalidatePath("/order/new");

@@ -25,7 +25,7 @@ export async function GET(
     status: order.status,
     payerName: order.payerName,
     restaurantName: order.restaurantName,
-    restaurantMenuUrl: order.restaurantMenuUrl,
+    restaurantMenuUrls: order.restaurantMenuUrls,
     note: order.note,
     entries: order.entries.map((e) => ({
       id: e.id,

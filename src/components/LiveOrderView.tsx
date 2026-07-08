@@ -61,15 +61,22 @@ export function LiveOrderView({ shortId, initialData }: Props) {
         </div>
       </div>
 
-      {/* Menu image */}
-      {data.restaurantMenuUrl && (
-        <div className="rounded-lg border overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={data.restaurantMenuUrl}
-            alt={`${data.restaurantName} menu`}
-            className="max-h-96 w-full object-contain"
-          />
+      {/* Menu images */}
+      {data.restaurantMenuUrls.length > 0 && (
+        <div className={data.restaurantMenuUrls.length === 1
+          ? "rounded-lg border overflow-hidden"
+          : "grid grid-cols-2 gap-2"
+        }>
+          {data.restaurantMenuUrls.map((url, i) => (
+            <div key={url} className="rounded-lg border overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={url}
+                alt={`${data.restaurantName} menu ${i + 1}`}
+                className="max-h-96 w-full object-contain"
+              />
+            </div>
+          ))}
         </div>
       )}
 

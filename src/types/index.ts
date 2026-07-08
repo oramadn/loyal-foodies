@@ -17,7 +17,7 @@ export type OrderSnapshot = {
   status: "OPEN" | "CLOSED";
   payerName: string;
   restaurantName: string;
-  restaurantMenuUrl: string | null;
+  restaurantMenuUrls: string[];
   note: string | null;
   entries: {
     id: string;

@@ -23,14 +23,14 @@ export function CreateOrderForm({ restaurants, preselected }: Props) {
   );
   const [restaurantId, setRestaurantId] = useState<string>(preselected?.id ?? "");
   const [restaurantName, setRestaurantName] = useState(preselected?.name ?? "");
-  const [menuUrl, setMenuUrl] = useState(preselected?.menuUrl ?? "");
+  const [menuUrls, setMenuUrls] = useState<string[]>(preselected?.menuUrls ?? []);
   const [note, setNote] = useState(preselected?.note ?? "");
 
   function handleRestaurantSelect(r: Restaurant | null) {
     if (r) {
       setRestaurantId(r.id);
       setRestaurantName(r.name);
-      setMenuUrl(r.menuUrl ?? "");
+      setMenuUrls(r.menuUrls ?? []);
       setNote(r.note ?? "");
     } else {
       setRestaurantId("");
@@ -71,13 +71,15 @@ export function CreateOrderForm({ restaurants, preselected }: Props) {
         )}
       </div>
 
-      <input type="hidden" name="restaurantMenuUrl" value={menuUrl} />
+      {menuUrls.map((url) => (
+        <input key={url} type="hidden" name="restaurantMenuUrls" value={url} />
+      ))}
       <div className="space-y-1.5">
         <Label>
-          Menu image{" "}
+          Menu images{" "}
           <span className="text-muted-foreground font-normal">(optional)</span>
         </Label>
-        <ImageUploader value={menuUrl} onChange={setMenuUrl} />
+        <ImageUploader values={menuUrls} onChange={setMenuUrls} />
       </div>
 
       <div className="space-y-1.5">

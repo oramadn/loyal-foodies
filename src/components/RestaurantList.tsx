@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
   const router = useRouter();
-  const [menuUrl, setMenuUrl] = useState("");
+  const [menuUrls, setMenuUrls] = useState<string[]>([]);
   const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
     createRestaurant,
     null
@@ -26,7 +26,7 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
   useEffect(() => {
     if (state?.success) {
       toast.success(state.message ?? "Restaurant saved!");
-      setMenuUrl("");
+      setMenuUrls([]);
     }
     if (state?.errors?._) {
       toast.error(state.errors._);
@@ -45,7 +45,9 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
         </CardHeader>
         <CardContent>
           <form action={formAction} className="space-y-4">
-            <input type="hidden" name="menuUrl" value={menuUrl} />
+            {menuUrls.map((url) => (
+              <input key={url} type="hidden" name="menuUrls" value={url} />
+            ))}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="name">Name</Label>
@@ -64,10 +66,10 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
             </div>
             <div className="space-y-1.5">
               <Label>
-                Menu image{" "}
+                Menu images{" "}
                 <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
-              <ImageUploader value={menuUrl} onChange={setMenuUrl} />
+              <ImageUploader values={menuUrls} onChange={setMenuUrls} />
             </div>
             <Button type="submit" disabled={isPending} size="sm">
               {isPending ? "Saving…" : "Save restaurant"}
@@ -94,9 +96,9 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  {r.menuUrl && (
+                  {r.menuUrls[0] && (
                     <a
-                      href={r.menuUrl}
+                      href={r.menuUrls[0]}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-8")}

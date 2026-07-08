@@ -11,7 +11,7 @@ datasource db {
 model Restaurant {
   id        String   @id @default(cuid())
   name      String
-  menuUrl   String?
+  menuUrls  String[]
   note      String?
   createdAt DateTime @default(now())
 
@@ -23,8 +23,8 @@ model Order {
   shortId           String      @unique
   restaurantId      String?
   restaurant        Restaurant? @relation(fields: [restaurantId], references: [id])
-  restaurantName    String
-  restaurantMenuUrl String?
+  restaurantName     String
+  restaurantMenuUrls String[]
   note              String?
   payerName         String
   status            OrderStatus @default(OPEN)
