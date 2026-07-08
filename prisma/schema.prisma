@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String
+  menuUrl   String?
+  note      String?
+  createdAt DateTime @default(now())
+
+  orders Order[]
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  shortId           String      @unique
+  restaurantId      String?
+  restaurant        Restaurant? @relation(fields: [restaurantId], references: [id])
+  restaurantName    String
+  restaurantMenuUrl String?
+  note              String?
+  payerName         String
+  status            OrderStatus @default(OPEN)
+  createdAt         DateTime    @default(now())
+  closedAt          DateTime?
+
+  entries OrderEntry[]
+}
+
+model OrderEntry {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  name      String
+  items     String
+  amount    Decimal? @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus {
+  OPEN
+  CLOSED
+}

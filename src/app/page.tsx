@@ -1,65 +1,122 @@
-import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/db";
+import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { PlusCircleIcon, ChevronRightIcon, BookmarkIcon } from "lucide-react";
+import { formatDate, cn } from "@/lib/utils";
 
-export default function Home() {
+export default async function HomePage() {
+  const [recentOrders, savedRestaurants] = await Promise.all([
+    prisma.order.findMany({
+      where: { status: "OPEN" },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: { _count: { select: { entries: true } } },
+    }),
+    prisma.restaurant.findMany({
+      orderBy: { name: "asc" },
+      take: 6,
+    }),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="max-w-2xl mx-auto px-4 py-8 space-y-10">
+      {/* Hero */}
+      <div className="text-center space-y-3">
+        <h1 className="text-3xl font-bold tracking-tight">Loyal Foodies</h1>
+        <p className="text-muted-foreground">
+          Start an order, share the link in #loyal-foodies, everyone adds their items.
+        </p>
+        <Link
+          href="/order/new"
+          className={cn(buttonVariants({ size: "lg" }), "mt-2 inline-flex gap-2")}
+        >
+          <PlusCircleIcon className="size-5" />
+          Start a new order
+        </Link>
+      </div>
+
+      <Separator />
+
+      {/* Active orders */}
+      <section className="space-y-3">
+        <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+          Active orders
+        </h2>
+        {recentOrders.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            No active orders right now.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        ) : (
+          <div className="space-y-2">
+            {recentOrders.map((order) => (
+              <Link key={order.id} href={`/order/${order.shortId}`}>
+                <Card className="hover:bg-muted/40 transition-colors cursor-pointer">
+                  <CardContent className="flex items-center justify-between gap-3 py-3 px-4">
+                    <div>
+                      <p className="font-medium">{order.restaurantName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {order.payerName} &middot; {order._count.entries} item
+                        {order._count.entries !== 1 ? "s" : ""} &middot;{" "}
+                        {formatDate(order.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="default" className="text-xs">Open</Badge>
+                      <ChevronRightIcon className="size-4 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Saved restaurants */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+            Saved restaurants
+          </h2>
+          <Link
+            href="/restaurants"
+            className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "inline-flex gap-1")}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <BookmarkIcon className="size-3.5" />
+            Manage
+          </Link>
         </div>
-      </main>
-    </div>
+        {savedRestaurants.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            No saved restaurants.{" "}
+            <Link href="/restaurants" className="underline underline-offset-2">
+              Add one
+            </Link>{" "}
+            to speed up future orders.
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {savedRestaurants.map((r) => (
+              <Link key={r.id} href={`/order/new?restaurantId=${r.id}`}>
+                <Card className="hover:bg-muted/40 transition-colors cursor-pointer h-full">
+                  <CardContent className="flex items-center justify-between gap-2 py-3 px-4">
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{r.name}</p>
+                      {r.note && (
+                        <p className="text-xs text-muted-foreground truncate">{r.note}</p>
+                      )}
+                    </div>
+                    <ChevronRightIcon className="size-4 text-muted-foreground shrink-0" />
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
