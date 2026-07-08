@@ -13,6 +13,8 @@ export type ActionState = {
   message?: string;
 };
 
+export type SharedCost = { name: string; amount: number };
+
 export type OrderSnapshot = {
   status: "OPEN" | "CLOSED";
   payerName: string;
@@ -27,4 +29,5 @@ export type OrderSnapshot = {
     createdAt: string;
   }[];
   totalOwed: string;
+  sharedCosts: SharedCost[];
 };

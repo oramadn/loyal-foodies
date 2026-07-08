@@ -49,14 +49,18 @@ export function JoinOrderForm({ shortId }: { shortId: string }) {
             Amount you owe{" "}
             <span className="text-muted-foreground font-normal">(optional)</span>
           </Label>
-          <Input
-            id="amount"
-            name="amount"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="e.g. 45.00"
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="e.g. 45.00"
+              className="flex-1"
+            />
+            <span className="text-sm text-muted-foreground shrink-0">JOD</span>
+          </div>
           {state?.errors?.amount && (
             <p className="text-destructive text-xs">{state.errors.amount}</p>
           )}

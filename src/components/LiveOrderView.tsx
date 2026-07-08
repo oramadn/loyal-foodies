@@ -8,6 +8,7 @@ import { OrderSummaryTable } from "@/components/OrderSummaryTable";
 import { JoinOrderForm } from "@/components/JoinOrderForm";
 import { CloseOrderButton } from "@/components/CloseOrderButton";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import type { OrderSnapshot } from "@/types";
 
 type Props = {
@@ -63,21 +64,10 @@ export function LiveOrderView({ shortId, initialData }: Props) {
 
       {/* Menu images */}
       {data.restaurantMenuUrls.length > 0 && (
-        <div className={data.restaurantMenuUrls.length === 1
-          ? "rounded-lg border overflow-hidden"
-          : "grid grid-cols-2 gap-2"
-        }>
-          {data.restaurantMenuUrls.map((url, i) => (
-            <div key={url} className="rounded-lg border overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={url}
-                alt={`${data.restaurantName} menu ${i + 1}`}
-                className="max-h-96 w-full object-contain"
-              />
-            </div>
-          ))}
-        </div>
+        <ImageLightbox
+          images={data.restaurantMenuUrls}
+          alt={`${data.restaurantName} menu`}
+        />
       )}
 
       <Separator />

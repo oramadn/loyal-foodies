@@ -5,8 +5,10 @@ import { OrderSummaryTable } from "@/components/OrderSummaryTable";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { PlusCircleIcon } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatCurrency } from "@/lib/utils";
+import type { SharedCost } from "@/types";
 
 type Props = {
   params: Promise<{ shortId: string }>;
@@ -34,6 +36,9 @@ export default async function ClosedOrderPage({ params }: Props) {
     createdAt: e.createdAt.toISOString(),
   }));
 
+  const sharedCosts: SharedCost[] = (order.sharedCosts as SharedCost[]) ?? [];
+  const totalFees = sharedCosts.reduce((s, c) => s + c.amount, 0);
+
   return (
     <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -55,6 +60,35 @@ export default async function ClosedOrderPage({ params }: Props) {
         </Link>
       </div>
 
+      {/* Shared costs breakdown */}
+      {sharedCosts.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Shared costs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1.5 text-sm">
+              {sharedCosts.map((c, i) => (
+                <div key={i} className="flex justify-between">
+                  <span className="text-muted-foreground">{c.name}</span>
+                  <span>{formatCurrency(c.amount)}</span>
+                </div>
+              ))}
+              <Separator className="my-2" />
+              <div className="flex justify-between font-medium">
+                <span>
+                  Total split among {order.entries.length} participant
+                  {order.entries.length !== 1 ? "s" : ""}
+                </span>
+                <span>
+                  {formatCurrency(totalFees / (order.entries.length || 1))} each
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Final order summary</CardTitle>
@@ -64,6 +98,7 @@ export default async function ClosedOrderPage({ params }: Props) {
             entries={entries}
             totalOwed={totalOwed.toFixed(2)}
             payerName={order.payerName}
+            sharedCosts={sharedCosts}
           />
         </CardContent>
       </Card>

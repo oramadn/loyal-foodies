@@ -28,6 +28,7 @@ model Order {
   note              String?
   payerName         String
   status            OrderStatus @default(OPEN)
+  sharedCosts       Json?
   createdAt         DateTime    @default(now())
   closedAt          DateTime?
 

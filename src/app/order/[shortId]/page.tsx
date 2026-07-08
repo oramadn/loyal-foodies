@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { LiveOrderView } from "@/components/LiveOrderView";
-import type { OrderSnapshot } from "@/types";
+import type { OrderSnapshot, SharedCost } from "@/types";
 
 type Props = {
   params: Promise<{ shortId: string }>;
@@ -27,6 +27,7 @@ export default async function OrderPage({ params }: Props) {
     restaurantName: order.restaurantName,
     restaurantMenuUrls: order.restaurantMenuUrls,
     note: order.note,
+    sharedCosts: (order.sharedCosts as SharedCost[]) ?? [],
     entries: order.entries.map((e) => ({
       id: e.id,
       name: e.name,

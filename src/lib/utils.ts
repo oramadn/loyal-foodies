@@ -9,10 +9,12 @@ export function formatCurrency(amount: string | number | null | undefined): stri
   if (amount === null || amount === undefined || amount === "") return "—";
   const num = typeof amount === "string" ? parseFloat(amount) : amount;
   if (isNaN(num)) return "—";
-  return num.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
+  return (
+    num.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }) + " JOD"
+  );
 }
 
 export function formatDate(date: Date | string): string {

@@ -4,15 +4,21 @@ import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { PlusCircleIcon, ChevronRightIcon, BookmarkIcon } from "lucide-react";
+import { PlusCircleIcon, ChevronRightIcon, BookmarkIcon, ClockIcon } from "lucide-react";
 import { formatDate, cn } from "@/lib/utils";
 
 export default async function HomePage() {
-  const [recentOrders, savedRestaurants] = await Promise.all([
+  const [recentOrders, closedOrders, savedRestaurants] = await Promise.all([
     prisma.order.findMany({
       where: { status: "OPEN" },
       orderBy: { createdAt: "desc" },
       take: 5,
+      include: { _count: { select: { entries: true } } },
+    }),
+    prisma.order.findMany({
+      where: { status: "CLOSED" },
+      orderBy: { closedAt: "desc" },
+      take: 8,
       include: { _count: { select: { entries: true } } },
     }),
     prisma.restaurant.findMany({
@@ -74,6 +80,38 @@ export default async function HomePage() {
           </div>
         )}
       </section>
+
+      {/* Closed orders */}
+      {closedOrders.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+            <ClockIcon className="size-3.5" />
+            Past orders
+          </h2>
+          <div className="space-y-2">
+            {closedOrders.map((order) => (
+              <Link key={order.id} href={`/order/${order.shortId}/closed`}>
+                <Card className="hover:bg-muted/40 transition-colors cursor-pointer">
+                  <CardContent className="flex items-center justify-between gap-3 py-3 px-4">
+                    <div>
+                      <p className="font-medium">{order.restaurantName}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {order.payerName} &middot; {order._count.entries} item
+                        {order._count.entries !== 1 ? "s" : ""} &middot;{" "}
+                        {order.closedAt ? formatDate(order.closedAt) : formatDate(order.createdAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">Closed</Badge>
+                      <ChevronRightIcon className="size-4 text-muted-foreground" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Saved restaurants */}
       <section className="space-y-3">

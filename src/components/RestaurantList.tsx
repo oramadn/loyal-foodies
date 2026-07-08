@@ -9,15 +9,113 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Trash2Icon, ExternalLinkIcon, PlusIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Trash2Icon, PencilIcon, PlusIcon } from "lucide-react";
 import { ImageUploader } from "@/components/ImageUploader";
-import { createRestaurant, deleteRestaurant } from "@/actions/restaurant";
+import { createRestaurant, deleteRestaurant, updateRestaurant } from "@/actions/restaurant";
 import type { ActionState, Restaurant } from "@/types";
 import { cn } from "@/lib/utils";
+
+function EditDialog({
+  restaurant,
+  onClose,
+}: {
+  restaurant: Restaurant;
+  onClose: () => void;
+}) {
+  const router = useRouter();
+  const [menuUrls, setMenuUrls] = useState<string[]>(restaurant.menuUrls);
+  const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
+    updateRestaurant,
+    null
+  );
+
+  useEffect(() => {
+    if (state?.success) {
+      toast.success(state.message ?? "Restaurant updated!");
+      router.refresh();
+      onClose();
+    }
+    if (state?.errors?._) {
+      toast.error(state.errors._);
+    }
+  }, [state, router, onClose]);
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Edit restaurant</DialogTitle>
+        </DialogHeader>
+        <form action={formAction} className="space-y-4">
+          <input type="hidden" name="id" value={restaurant.id} />
+          {menuUrls.map((url) => (
+            <input key={url} type="hidden" name="menuUrls" value={url} />
+          ))}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-name">Name</Label>
+              <Input
+                id="edit-name"
+                name="name"
+                defaultValue={restaurant.name}
+                required
+              />
+              {state?.errors?.name && (
+                <p className="text-destructive text-xs">{state.errors.name}</p>
+              )}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-note">
+                Note{" "}
+                <span className="text-muted-foreground font-normal">(optional)</span>
+              </Label>
+              <Input
+                id="edit-note"
+                name="note"
+                defaultValue={restaurant.note ?? ""}
+                placeholder="e.g. No substitutions"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>
+              Menu images{" "}
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </Label>
+            <ImageUploader values={menuUrls} onChange={setMenuUrls} />
+          </div>
+
+          <DialogFooter showCloseButton={false}>
+            <button
+              type="button"
+              onClick={onClose}
+              className={cn(buttonVariants({ variant: "outline" }))}
+            >
+              Cancel
+            </button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Saving…" : "Save changes"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
   const router = useRouter();
   const [menuUrls, setMenuUrls] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
     createRestaurant,
     null
@@ -32,6 +130,8 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
       toast.error(state.errors._);
     }
   }, [state]);
+
+  const editingRestaurant = restaurants.find((r) => r.id === editingId) ?? null;
 
   return (
     <div className="space-y-6">
@@ -94,18 +194,20 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
                   {r.note && (
                     <p className="text-xs text-muted-foreground mt-0.5">{r.note}</p>
                   )}
+                  {r.menuUrls.length > 0 && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {r.menuUrls.length} menu image{r.menuUrls.length !== 1 ? "s" : ""}
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
-                  {r.menuUrls[0] && (
-                    <a
-                      href={r.menuUrls[0]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-8")}
-                    >
-                      <ExternalLinkIcon className="size-3.5" />
-                    </a>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setEditingId(r.id)}
+                    className={cn(buttonVariants({ variant: "ghost", size: "icon" }), "size-8")}
+                  >
+                    <PencilIcon className="size-3.5" />
+                  </button>
                   <form
                     action={async () => {
                       await deleteRestaurant(r.id);
@@ -127,6 +229,14 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Edit dialog */}
+      {editingRestaurant && (
+        <EditDialog
+          restaurant={editingRestaurant}
+          onClose={() => setEditingId(null)}
+        />
       )}
     </div>
   );

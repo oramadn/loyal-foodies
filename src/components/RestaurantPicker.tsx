@@ -22,11 +22,12 @@ import type { Restaurant } from "@/types";
 type Props = {
   restaurants: Restaurant[];
   onSelect: (restaurant: Restaurant | null) => void;
+  initialId?: string;
 };
 
-export function RestaurantPicker({ restaurants, onSelect }: Props) {
+export function RestaurantPicker({ restaurants, onSelect, initialId }: Props) {
   const [open, setOpen] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
 
   const selected = restaurants.find((r) => r.id === selectedId) ?? null;
 

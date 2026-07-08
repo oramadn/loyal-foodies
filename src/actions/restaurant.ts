@@ -13,16 +13,37 @@ export async function createRestaurant(
   const menuUrls = formData.getAll("menuUrls") as string[];
   const note = formData.get("note")?.toString().trim() || null;
 
-  if (!name) {
-    return { success: false, errors: { name: "Restaurant name is required" } };
-  }
+  if (!name) return { success: false, errors: { name: "Restaurant name is required" } };
 
   await prisma.restaurant.create({ data: { name, menuUrls, note } });
 
   revalidatePath("/restaurants");
   revalidatePath("/order/new");
-
   return { success: true, message: `${name} saved!` };
+}
+
+export async function updateRestaurant(
+  _prevState: ActionState | null,
+  formData: FormData
+): Promise<ActionState> {
+  const id = formData.get("id")?.toString() ?? "";
+  const name = formData.get("name")?.toString().trim() ?? "";
+  const menuUrls = formData.getAll("menuUrls") as string[];
+  const note = formData.get("note")?.toString().trim() || null;
+
+  if (!name) return { success: false, errors: { name: "Restaurant name is required" } };
+
+  const existing = await prisma.restaurant.findUnique({ where: { id }, select: { menuUrls: true } });
+
+  // Delete blobs that were removed
+  const removed = (existing?.menuUrls ?? []).filter((u) => !menuUrls.includes(u));
+  if (removed.length) await del(removed);
+
+  await prisma.restaurant.update({ where: { id }, data: { name, menuUrls, note } });
+
+  revalidatePath("/restaurants");
+  revalidatePath("/order/new");
+  return { success: true, message: `${name} updated!` };
 }
 
 export async function deleteRestaurant(id: string): Promise<void> {
@@ -31,9 +52,7 @@ export async function deleteRestaurant(id: string): Promise<void> {
     select: { menuUrls: true },
   });
 
-  if (restaurant?.menuUrls.length) {
-    await del(restaurant.menuUrls);
-  }
+  if (restaurant?.menuUrls.length) await del(restaurant.menuUrls);
 
   await prisma.restaurant.delete({ where: { id } });
   revalidatePath("/restaurants");

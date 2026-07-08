@@ -47,6 +47,7 @@ export function CreateOrderForm({ restaurants, preselected }: Props) {
           <RestaurantPicker
             restaurants={restaurants}
             onSelect={handleRestaurantSelect}
+            initialId={preselected?.id}
           />
           <div className="flex items-center gap-3">
             <Separator className="flex-1" />
