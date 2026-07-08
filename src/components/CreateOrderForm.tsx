@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { RestaurantPicker } from "@/components/RestaurantPicker";
+import { ImageUploader } from "@/components/ImageUploader";
 import { createOrder } from "@/actions/order";
 import type { ActionState, Restaurant } from "@/types";
 
@@ -70,19 +71,13 @@ export function CreateOrderForm({ restaurants, preselected }: Props) {
         )}
       </div>
 
+      <input type="hidden" name="restaurantMenuUrl" value={menuUrl} />
       <div className="space-y-1.5">
-        <Label htmlFor="restaurantMenuUrl">
-          Menu image URL{" "}
+        <Label>
+          Menu image{" "}
           <span className="text-muted-foreground font-normal">(optional)</span>
         </Label>
-        <Input
-          id="restaurantMenuUrl"
-          name="restaurantMenuUrl"
-          type="url"
-          placeholder="https://…"
-          value={menuUrl}
-          onChange={(e) => setMenuUrl(e.target.value)}
-        />
+        <ImageUploader value={menuUrl} onChange={setMenuUrl} />
       </div>
 
       <div className="space-y-1.5">

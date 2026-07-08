@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -10,12 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Trash2Icon, ExternalLinkIcon, PlusIcon } from "lucide-react";
+import { ImageUploader } from "@/components/ImageUploader";
 import { createRestaurant, deleteRestaurant } from "@/actions/restaurant";
 import type { ActionState, Restaurant } from "@/types";
 import { cn } from "@/lib/utils";
 
 export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
   const router = useRouter();
+  const [menuUrl, setMenuUrl] = useState("");
   const [state, formAction, isPending] = useActionState<ActionState | null, FormData>(
     createRestaurant,
     null
@@ -24,6 +26,7 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
   useEffect(() => {
     if (state?.success) {
       toast.success(state.message ?? "Restaurant saved!");
+      setMenuUrl("");
     }
     if (state?.errors?._) {
       toast.error(state.errors._);
@@ -42,6 +45,7 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
         </CardHeader>
         <CardContent>
           <form action={formAction} className="space-y-4">
+            <input type="hidden" name="menuUrl" value={menuUrl} />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="name">Name</Label>
@@ -51,19 +55,19 @@ export function RestaurantList({ restaurants }: { restaurants: Restaurant[] }) {
                 )}
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="menuUrl">
-                  Menu URL{" "}
+                <Label htmlFor="note">
+                  Note{" "}
                   <span className="text-muted-foreground font-normal">(optional)</span>
                 </Label>
-                <Input id="menuUrl" name="menuUrl" type="url" placeholder="https://…" />
+                <Input id="note" name="note" placeholder="e.g. No substitutions" />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="note">
-                Note{" "}
+              <Label>
+                Menu image{" "}
                 <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
-              <Textarea id="note" name="note" placeholder="e.g. No substitutions" rows={2} />
+              <ImageUploader value={menuUrl} onChange={setMenuUrl} />
             </div>
             <Button type="submit" disabled={isPending} size="sm">
               {isPending ? "Saving…" : "Save restaurant"}
