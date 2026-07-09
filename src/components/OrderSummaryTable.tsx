@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, parseOrderItems, itemsSortKey } from "@/lib/utils";
 import type { OrderSnapshot, SharedCost } from "@/types";
 
 type Props = {
@@ -33,6 +33,10 @@ export function OrderSummaryTable({ entries, totalOwed, payerName, sharedCosts }
   const feePerPerson = entries.length > 0 ? totalFees / entries.length : 0;
   const grandTotal = parseFloat(totalOwed) + totalFees;
 
+  const sorted = [...entries].sort((a, b) =>
+    itemsSortKey(a.items).localeCompare(itemsSortKey(b.items))
+  );
+
   return (
     <Table>
       <TableHeader>
@@ -49,13 +53,29 @@ export function OrderSummaryTable({ entries, totalOwed, payerName, sharedCosts }
         </TableRow>
       </TableHeader>
       <TableBody>
-        {entries.map((entry) => {
+        {sorted.map((entry) => {
           const food = entry.amount ? parseFloat(entry.amount) : null;
           const personTotal = food !== null ? food + feePerPerson : null;
+          const parsedItems = parseOrderItems(entry.items);
           return (
             <TableRow key={entry.id}>
               <TableCell className="font-medium whitespace-nowrap">{entry.name}</TableCell>
-              <TableCell className="text-muted-foreground">{entry.items}</TableCell>
+              <TableCell className="text-muted-foreground">
+                {parsedItems ? (
+                  <ul className="space-y-0.5">
+                    {parsedItems.map((item, i) => (
+                      <li key={i} className="flex items-center gap-1.5 text-sm">
+                        <span className="tabular-nums text-xs font-medium w-5 text-right shrink-0">
+                          {item.qty}×
+                        </span>
+                        {item.name}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  entry.items
+                )}
+              </TableCell>
               <TableCell className="text-right whitespace-nowrap">
                 {formatCurrency(entry.amount)}
               </TableCell>

@@ -14,7 +14,18 @@ export async function addEntry(
 
   const errors: Record<string, string> = {};
   if (!name) errors.name = "Your name is required";
-  if (!items) errors.items = "Items are required";
+  if (!items) {
+    errors.items = "Please add at least one item";
+  } else {
+    try {
+      const parsed = JSON.parse(items);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        errors.items = "Please add at least one item";
+      }
+    } catch {
+      // plain-text fallback for any non-JSON submissions
+    }
+  }
 
   let amount: number | null = null;
   if (amountStr) {

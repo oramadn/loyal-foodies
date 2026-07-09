@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeftIcon, PlusCircleIcon } from "lucide-react";
-import { cn, formatDate, formatCurrency } from "@/lib/utils";
+import { cn, formatDate, formatCurrency, aggregateOrderItems } from "@/lib/utils";
 import type { SharedCost } from "@/types";
 
 type Props = {
@@ -38,6 +38,7 @@ export default async function ClosedOrderPage({ params }: Props) {
 
   const sharedCosts: SharedCost[] = (order.sharedCosts as SharedCost[]) ?? [];
   const totalFees = sharedCosts.reduce((s, c) => s + c.amount, 0);
+  const aggregated = aggregateOrderItems(entries);
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
@@ -66,6 +67,28 @@ export default async function ClosedOrderPage({ params }: Props) {
           New order
         </Link>
       </div>
+
+      {/* Aggregated call sheet */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Items to order</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-1.5">
+            {aggregated.map((item, i) => (
+              <li key={i} className="flex items-baseline gap-3 text-sm">
+                <span className="tabular-nums font-semibold text-foreground w-6 text-right shrink-0">
+                  {item.qty}×
+                </span>
+                <span className="flex-1 font-medium">{item.name}</span>
+                <span className="text-muted-foreground text-xs shrink-0">
+                  {item.orderedBy.join(", ")}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
 
       {/* Shared costs breakdown */}
       {sharedCosts.length > 0 && (

@@ -1,4 +1,5 @@
 export type { Order, OrderEntry, Restaurant, OrderStatus } from "@prisma/client";
+export type { OrderItem } from "@/lib/utils";
 
 import type { Order, OrderEntry, Restaurant } from "@prisma/client";
 
