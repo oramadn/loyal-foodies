@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { LiveOrderView } from "@/components/LiveOrderView";
+import { buttonVariants } from "@/components/ui/button";
+import { ArrowLeftIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { OrderSnapshot, SharedCost } from "@/types";
 
 type Props = {
@@ -40,6 +44,13 @@ export default async function OrderPage({ params }: Props) {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8">
+      <Link
+        href="/"
+        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2 mb-4 inline-flex")}
+      >
+        <ArrowLeftIcon className="size-4 mr-1" />
+        Home
+      </Link>
       <LiveOrderView shortId={shortId} initialData={initialData} />
     </main>
   );

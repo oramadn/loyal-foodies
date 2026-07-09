@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { PlusCircleIcon } from "lucide-react";
-import { formatDate, formatCurrency } from "@/lib/utils";
+import { ArrowLeftIcon, PlusCircleIcon } from "lucide-react";
+import { cn, formatDate, formatCurrency } from "@/lib/utils";
 import type { SharedCost } from "@/types";
 
 type Props = {
@@ -41,6 +41,13 @@ export default async function ClosedOrderPage({ params }: Props) {
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <Link
+        href="/"
+        className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-ml-2 inline-flex")}
+      >
+        <ArrowLeftIcon className="size-4 mr-1" />
+        Home
+      </Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
