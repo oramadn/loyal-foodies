@@ -17,10 +17,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "File must be under 5 MB" }, { status: 400 });
   }
 
-  const blob = await put(`menus/${file.name}`, file, {
-    access: "public",
-    addRandomSuffix: true,
-  });
-
-  return NextResponse.json({ url: blob.url });
+  try {
+    const blob = await put(`menus/${file.name}`, file, {
+      access: "public",
+      addRandomSuffix: true,
+    });
+    return NextResponse.json({ url: blob.url });
+  } catch (err) {
+    console.error("Blob upload failed:", err);
+    return NextResponse.json(
+      { error: "Upload failed. Is BLOB_READ_WRITE_TOKEN set?" },
+      { status: 500 }
+    );
+  }
 }
